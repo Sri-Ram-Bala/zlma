@@ -77,7 +77,6 @@ function checkBase
       exit 1
     fi
   fi
-  # Verify we actually found the directory
 if [ ! -d "$REPO_DIR" ]; then
     echo "ERROR: Could not determine repository location."
     exit 2
