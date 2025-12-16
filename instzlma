@@ -77,9 +77,9 @@ function checkBase
       exit 1
     fi
   fi
-  if [ ! -d $REPO_DIR ]; then
-    echo 'ERROR: zlma repo not found under $HOME' 
-    echo "Try:   cd; git clone https://github.com/mike99mac/zlma"
+  # Verify we actually found the directory
+if [ ! -d "$REPO_DIR" ]; then
+    echo "ERROR: Could not determine repository location."
     exit 2
   fi
   id apache > /dev/null 2>&1
