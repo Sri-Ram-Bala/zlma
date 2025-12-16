@@ -3,6 +3,7 @@
 # instzlma - install zlma onto a Linux on s390x (mainframe) architecture 
 #            user running this must have sudo access
 #
+REPO_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 #+--------------------------------------------------------------------------+
 function usage()
 # Give help to the user
@@ -76,9 +77,8 @@ function checkBase
       exit 1
     fi
   fi
-  if [ ! -d $HOME/zlma ]; then
-    echo 'ERROR: zlma repo not found under $HOME' 
-    echo "Try:   cd; git clone https://github.com/mike99mac/zlma"
+if [ ! -d "$REPO_DIR" ]; then
+    echo "ERROR: Could not determine repository location."
     exit 2
   fi
   id apache > /dev/null 2>&1
@@ -374,7 +374,7 @@ function mkVenv
 #   echo "  The mariadb connector $connectorLib seems to be installed - skipping" | tee -a $outFile
 # else                                     # build and install the mariadb connector v3.3.1
 #   connectorVer="mariadb-connector-c-3.2.6-src"
-#   tarFile="$HOME/zlma/$connectorVer.tar.gz"
+#   tarFile="$REPO_DIR/$connectorVer.tar.gz"
 #   # wget https://downloads.mariadb.org/connector-c/3.3.1/$tarFile - old file
 #   cd /tmp
 #   runCmd tar -xzf $tarFile 
@@ -442,7 +442,7 @@ function confApache
     svcFile="/usr/lib/systemd/system/httpd.service"
     if [ ! -f $svcFile.orig ]; then         # no backup
       runCmd sudo cp $svcFile $svcFile.orig # make a backup
-      runCmd sudo cp $HOME/zlma/httpd.service.RHEL /usr/lib/systemd/system/httpd.service
+      runCmd sudo cp $REPO_DIR/httpd.service.RHEL /usr/lib/systemd/system/httpd.service
       runCmd sudo systemctl daemon-reload   # reload modified file
     fi
     runCmd sudo cp /etc/mime.types /etc/httpd/conf # copy mime.types to Apache conf dir
@@ -465,16 +465,16 @@ function mkCustom
   echo | tee -a $outFile
   echo "Step 14): Customizing environment ..." | tee -a $outFile
 
-  runCmd sudo cp $HOME/zlma/bash_profile $HOME/.bash_profile
+  runCmd sudo cp $REPO_DIR/bash_profile $HOME/.bash_profile
   if [ "$webUser" = "apache" ]; then       # RHEL-based:
     if [ ! -f /etc/vimrc.orig ]; then
       runCmd sudo mv /etc/vimrc /etc/vimrc.orig                   
-      runCmd sudo cp $HOME/zlma/vimrc /etc/                       
+      runCmd sudo cp $REPO_DIR/vimrc /etc/                       
     fi
     if [ -f /etc/zlma.conf ]; then         # already exists
       echo "/etc/zlma.conf exists - not overwriting"
     else                                   # copy it
-      runCmd sudo cp $HOME/zlma/zlma.conf /etc/                       
+      runCmd sudo cp $REPO_DIR/zlma.conf /etc/                       
     fi
     cd /usr/share/vim/vim8*
     if [ -f indent.vim ]; then             # turn off annoying indent rules
@@ -483,7 +483,7 @@ function mkCustom
   else                                     # assume Debian-based  
     if [ ! -f /etc/vim/vimrc.orig ]; then
       runCmd sudo mv /etc/vim/vimrc /etc/vim/vimrc.orig                   
-      runCmd sudo cp $HOME/zlma/vimrc /etc/vimrc                       
+      runCmd sudo cp $REPO_DIR/vimrc /etc/vimrc                       
     fi
     cd /usr/share/vim/vim9*
     if [ -f indent.vim ]; then             # turn off annoying indent rules
@@ -492,10 +492,10 @@ function mkCustom
     cd /usr/share/vim/vim9*/colors
     if [ -f desert.vim -a ! -f desert.vim.orig ]; then      # replace desert.vim with strange colors
       runCmd sudo cp desert.vim desert.vim.orig
-      runCmd sudo cp $HOME/zlma/desert.vim . 
+      runCmd sudo cp $REPO_DIR/desert.vim . 
     fi
   fi	    
-  runCmd sudo cp $HOME/zlma/zlma.conf /etc/                       
+  runCmd sudo cp $REPO_DIR/zlma.conf /etc/                       
  }                                         # mkCustom()
 
 #+--------------------------------------------------------------------------+
@@ -549,7 +549,7 @@ function restartServices
  }                                         # restartServices()
 
 # main()
-repoDir="$HOME/zlma"                       # directory with zlma repo 
+repoDir="$REPO_DIR"                       # directory with zlma repo 
 timeStamp=`date +"%y-%m-%d-%H-%M-%S"`      # current date and time
 outFile="$HOME/$timeStamp-instzlma.out"    # log file
 pythonCmd="python3"                        # can be python3.11
